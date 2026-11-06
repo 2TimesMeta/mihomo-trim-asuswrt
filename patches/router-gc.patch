@@ -1,0 +1,27 @@
+diff --git a/main.go b/main.go
+index 972caf8..928873b 100644
+--- a/main.go
++++ b/main.go
+@@ -11,6 +11,7 @@ import (
+ 	"os/signal"
+ 	"path/filepath"
+ 	"runtime"
++	"runtime/debug"
+ 	"strconv"
+ 	"strings"
+ 	"syscall"
+@@ -77,6 +78,14 @@ func init() {
+ 	flag.Parse()
+ }
+ 
++func init() {
++	// 低内存部署（路由器）默认收紧 GC 触发阈值：堆增长 20% 即回收，而不是默认的 100%。
++	// 显式设置 GOGC / GOMEMLIMIT 时以环境变量为准，不覆盖用户意图。
++	if os.Getenv("GOGC") == "" && os.Getenv("GOMEMLIMIT") == "" {
++		debug.SetGCPercent(20)
++	}
++}
++
+ func main() {
+ 	// Defensive programming: panic when code mistakenly calls net.DefaultResolver
+ 	net.DefaultResolver.PreferGo = true
